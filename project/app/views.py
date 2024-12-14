@@ -3,8 +3,9 @@ from django.shortcuts import render, redirect
 from .models import Document
 from django.contrib import messages
 from django.contrib.auth.models import User
-from django.contrib.auth import authenticate, login
 from django.contrib.auth import logout
+from django.contrib.auth import login as auth_login, authenticate
+
 
 
 
@@ -30,45 +31,65 @@ def register(request):
         return redirect(login)
     return render(request,'register.html')
     
-
-def login(request):
+def login(request):  # Rename the login view function
     if request.method == 'POST':
         username = request.POST.get('username')
         password = request.POST.get('password')
-
-        
         user = authenticate(request, username=username, password=password)
+
         if user is not None:
-            login(request, user)
-            messages.success(request, 'Login successful.')
-            return redirect(home)  
+            auth_login(request, user)  # Use the imported login function
+            return redirect('home')
         else:
             messages.error(request, 'Invalid username or password.')
 
     return render(request, 'login.html')
 
 
+
+
 def logout(request):
-    logout(request)
     messages.success(request, 'Logout successful.')
     return redirect(login)
-
-
-
-
 
 
 def home(req):
     return render(req,'home.html')
 
+
 def add(req):
-    return render(req,'add.html')
+    if req.method == 'POST':
+        title = req.POST.get('title')
+        file = req.FILES.get('file')  
+        user = req.user  
+        if title and file:  
+            Document.objects.create(user=user, title=title, file=file)
+            return redirect(view)  
+        else:
+            return render(req, 'add.html', {'error': 'All fields are required.'})
+    return render(req, 'add.html')
 
 def view(req):
-    return render(req,'view.html')
+    user = req.user 
+    documents = Document.objects.filter(user=user)  
+    return render(req, 'view.html', {'documents': documents})
 
-def edit(req):
-    return render(req,'edit.html')
+
+
+def edit(req, id):
+    document = Document.objects.get(pk=id)
+    if req.method == 'POST':
+        title = req.POST.get('title')
+        file = req.FILES.get('file')
+        if title:
+            document.title = title
+        if file:
+            document.file = file
+        document.save()
+        return redirect('view')  
+    return render(req, 'edit.html', {'document': document})
+
+
 
 def delete(req):
     return redirect(view)
