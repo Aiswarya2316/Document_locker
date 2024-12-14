@@ -1,14 +1,9 @@
-
 from django.shortcuts import render, redirect
 from .models import Document
 from django.contrib import messages
 from django.contrib.auth.models import User
-from django.contrib.auth import logout
+from django.contrib.auth import logout as auth_logout
 from django.contrib.auth import login as auth_login, authenticate
-
-
-
-
 
 def register(request):
     if request.method == 'POST':
@@ -18,7 +13,7 @@ def register(request):
 
         if password != password_confirm:
             messages.error(request, 'Passwords do not match.')
-            return render(request, 'accounts/register.html')
+            return render(request, 'register.html')
 
         if User.objects.filter(username=username).exists():
             messages.error(request, 'Username already exists.')
@@ -46,50 +41,20 @@ def login(request):
     return render(request, 'login.html')
 
 
-
-
 def logout(request):
-    messages.success(request, 'Logout successful.')
-    return redirect(login)
-
+    # auth_logout(request)  
+    messages.success(request, 'Logout successful.') 
+    return redirect('login') 
 
 def home(req):
     return render(req,'home.html')
 
 
-def add(req):
-    if req.method == 'POST':
-        title = req.POST.get('title')
-        file = req.FILES.get('file')  
-        user = req.user  
-        if title and file:  
-            Document.objects.create(user=user, title=title, file=file)
-            return redirect(view)  
-        else:
-            return render(req, 'add.html', {'error': 'All fields are required.'})
-    return render(req, 'add.html')
 
 def view(req):
     user = req.user 
     documents = Document.objects.filter(user=user)  
     return render(req, 'view.html', {'documents': documents})
-
-
-
-def edit(req, id):
-    document = Document.objects.get(pk=id)
-    if req.method == 'POST':
-        title = req.POST.get('title')
-        file = req.FILES.get('file')
-        if title:
-            document.title = title
-        if file:
-            document.file = file
-        document.save()
-        return redirect('view')  
-    return render(req, 'edit.html', {'document': document})
-
-
 
 def add(req):
     if req.method == 'POST':
@@ -102,12 +67,6 @@ def add(req):
         else:
             return render(req, 'add.html', {'error': 'All fields are required.'})
     return render(req, 'add.html')
-
-def view(req):
-    user = req.user 
-    documents = Document.objects.filter(user=user)  
-    return render(req, 'view.html', {'documents': documents})
-
 
 
 def edit(req, id):
