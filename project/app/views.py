@@ -31,14 +31,14 @@ def register(request):
         return redirect(login)
     return render(request,'register.html')
     
-def login(request):  # Rename the login view function
+def login(request):  
     if request.method == 'POST':
         username = request.POST.get('username')
         password = request.POST.get('password')
         user = authenticate(request, username=username, password=password)
 
         if user is not None:
-            auth_login(request, user)  # Use the imported login function
+            auth_login(request, user)  
             return redirect('home')
         else:
             messages.error(request, 'Invalid username or password.')
@@ -91,5 +91,45 @@ def edit(req, id):
 
 
 
-def delete(req):
-    return redirect(view)
+def add(req):
+    if req.method == 'POST':
+        title = req.POST.get('title')
+        file = req.FILES.get('file')  
+        user = req.user  
+        if title and file:  
+            Document.objects.create(user=user, title=title, file=file)
+            return redirect(view)  
+        else:
+            return render(req, 'add.html', {'error': 'All fields are required.'})
+    return render(req, 'add.html')
+
+def view(req):
+    user = req.user 
+    documents = Document.objects.filter(user=user)  
+    return render(req, 'view.html', {'documents': documents})
+
+
+
+def edit(req, id):
+    document = Document.objects.get(pk=id)
+    if req.method == 'POST':
+        title = req.POST.get('title')
+        file = req.FILES.get('file')
+        if title:
+            document.title = title
+        if file:
+            document.file = file
+        document.save()
+        return redirect('view')  
+    return render(req, 'edit.html', {'document': document})
+
+
+
+def delete(req, id):
+    try:
+        document = Document.objects.get(pk=id)
+        document.delete()
+    except Document.DoesNotExist:
+        pass  
+    
+    return redirect('view') 

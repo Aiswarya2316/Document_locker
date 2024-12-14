@@ -34,14 +34,15 @@
             {% for document in documents %}
                 <li>
                     <strong>{{ document.title }}</strong> - 
-                    <a href="{{ document.file.url }}" target="_blank">Download</a>
+                    <a href="{{ document.file.url }}" target="_blank">Download</a> - 
+                    <a href="{% url 'edit' document.pk %}">Edit</a>
+                    <a href="{% url 'delete' document.pk %}">Delete</a>
+
                 </li>
             {% endfor %}
         </ul>
     {% else %}
         <p>No documents found.</p>
     {% endif %}
-    
-    <a href="../edit">Edit</a>
 </body>
 </html>
