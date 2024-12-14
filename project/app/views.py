@@ -23,11 +23,12 @@ def register(request):
             messages.error(request, 'Username already exists.')
             return render(request, 'register.html')
 
-        # Create the user
+        
         user = User.objects.create_user(username=username, password=password)
         user.save()
         messages.success(request, 'Registration successful. Please log in.')
         return redirect(login)
+    return render(request,'register.html')
     
 
 def login(request):
@@ -35,19 +36,19 @@ def login(request):
         username = request.POST.get('username')
         password = request.POST.get('password')
 
-        # Authenticate user
+        
         user = authenticate(request, username=username, password=password)
         if user is not None:
             login(request, user)
             messages.success(request, 'Login successful.')
-            return redirect(home)  # Replace 'home' with your desired view name
+            return redirect(home)  
         else:
             messages.error(request, 'Invalid username or password.')
 
     return render(request, 'login.html')
 
 
-def logout_view(request):
+def logout(request):
     logout(request)
     messages.success(request, 'Logout successful.')
     return redirect(login)
